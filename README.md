@@ -8,4 +8,4 @@ completing this project I learnt a lot about web views, models, templates, datab
 # Screen Shots
 <img src="./screen_shots/Home.png" width="49%"/>   <img src="./screen_shots/Page.png" width="49%"/>
 
-<img src="./screen_shots/Detail.png" width="49%"/>   <img src="./screen_shots/Profile.png" width="45%"/>
+<img src="./screen_shots/Detail.png" width="49%"/>   <img src="./screen_shots/Profile.png" width="49%"/>
