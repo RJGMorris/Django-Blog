@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from blog.models import Post
 from PIL import Image
 
 
@@ -8,6 +9,7 @@ class Profile(models.Model):
     image = models.ImageField(default='default.jpg', upload_to='profile_pics')
     followers = models.ManyToManyField(User, related_name="followers_profile", blank=True)
     following = models.ManyToManyField(User, related_name="following_profile", blank=True)
+    liked_posts = models.ManyToManyField(Post, related_name="liked_profile")
 
     def __str__(self):
         return f'{self.user.username} Profile'
