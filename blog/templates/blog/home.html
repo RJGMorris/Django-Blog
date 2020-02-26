@@ -1,18 +1,39 @@
 {% extends "blog/base.html" %}
 {% block content %}
     {% for post in posts %}
-        <article class="media content-section">
-          <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
-          <div class="media-body">
-            <div class="article-metadata">
-              <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
-              <small class="text-muted">{{ post.date_posted|date:"F d Y" }}</small>
-            </div>
-            <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
-            <p class="article-content">{{ post.content }}</p>
-          </div>
+     <div class="content-section">
+        <article class="media">
+            <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
+                    <small class="text-muted">{{ post.date_posted|date:"F d Y" }}</small>
+                    {% if post.author == user %}
+                    <div class="float-right">
+                        <a class="badge badge-secondary mt-1 mb-1" href="{% url 'post-update' post.id %}">Update</a>
+                        <a class="badge badge-danger mt-1 mb-1" href="{% url 'post-delete' post.id %}">Delete</a>
+                    </div>
+                    {% endif %}
+                </div>
+                <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
+              </div>
         </article>
+          <p class="article-content">{{ post.content }}</p>
+        <div class="d-flex justify-content-between">
+            <a class="btn article-title" href="{% url 'post-likes' post.id %}">Likes: {{ post.liked_by.count }}</a>
+            <a class="btn article-title" href="{% url 'post-detail' post.id %}">Comments: {{ post.comments.count }}</a>
+        </div>
+        <div class="d-flex justify-content-between">
+            {% if post in user.profile.liked_posts.all %}
+            <a class="btn btn-outline-secondary btn-block btn-sm m-1" href="{% url 'un-like' post.id %}"><i class="fa fa-thumbs-o-up pr-1"></i>Liked</a>
+            {% else %}
+            <a class="btn btn-outline-secondary btn-block btn-sm m-1" href="{% url 'like' post.id %}"><i class="fa fa-thumbs-o-up pr-1"></i>Like</a>
+            {% endif %}
+            <a class="btn btn-outline-secondary btn-block btn-sm m-1" href="{% url 'post-detail' post.id %}#comment"><i class="fa fa-comment-o pr-1"></i>Comment</a>
+        </div>
+    </div>
     {% endfor %}
+
     {% if is_paginated %}
 
         {% if page_obj.has_previous %}

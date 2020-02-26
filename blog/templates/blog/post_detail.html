@@ -1,22 +1,75 @@
 {% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
 {% block content %}
-    <article class="media content-section">
-      <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
-      <div class="media-body">
-        <div class="article-metadata">
-          <a class="mr-2" href="{% url 'user-posts' object.author.username %}">{{ object.author }}</a>
-          <small class="text-muted">{{ object.date_posted|date:"F d Y" }}</small>
-          {% if object.author == user %}
-            <div>
-              <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' object.id %}">Update</a>
-              <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' object.id %}">Delete</a>
-            </div>
-          {% endif %}
+
+     <div class="content-section">
+        <article class="media">
+            <img class="rounded-circle article-img" src="{{ object.get.author.profile.image.url }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="{% url 'user-posts' object.get.author.username %}">{{ object.get.author }}</a>
+                    <small class="text-muted">{{ object.get.date_posted|date:"F d Y" }}</small>
+                    {% if object.get.author == user %}
+                    <div class="float-right">
+                        <a class="badge badge-secondary mt-1 mb-1" href="{% url 'post-update' object.get.id %}">Update</a>
+                        <a class="badge badge-danger mt-1 mb-1" href="{% url 'post-delete' object.get.id %}">Delete</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <h2><a class="article-title" href="{% url 'post-detail' object.get.id %}">{{ object.get.title }}</a></h2>
+              </div>
+        </article>
+          <p class="article-content">{{ object.get.content }}</p>
+        <div class="d-flex justify-content-between">
+            <a class="btn article-title" href="{% url 'post-likes' object.get.id %}">Likes: {{ object.get.liked_by.count }}</a>
+            <a class="btn article-title" href="{% url 'post-detail' object.get.id %}">Comments: {{ object.get.comments.count }}</a>
         </div>
-        <h2 class="article-title">{{ object.title }}</h2>
-        <p class="article-content">{{ object.content }}</p>
+        <div class="d-flex justify-content-between">
+            {% if object.get in user.profile.liked_posts.all %}
+            <a class="btn btn-outline-secondary btn-block btn-sm m-1" href="{% url 'un-like' object.get.id %}"><i class="fa fa-thumbs-o-up pr-1"></i>Liked</a>
+            {% else %}
+            <a class="btn btn-outline-secondary btn-block btn-sm m-1" href="{% url 'like' object.get.id %}"><i class="fa fa-thumbs-o-up pr-1"></i>Like</a>
+            {% endif %}
+            <a class="btn btn-outline-secondary btn-block btn-sm m-1" href="{% url 'post-detail' object.get.id %}#comment"><i class="fa fa-comment-o pr-1"></i>Comment</a>
+        </div>
+    </div>
+
+        <h5 style='border-bottom:1px solid #ccc;' class="pt-1 pb-1 text-center">Comments: {{object.get.comments.count}}</h5>
+        {% for comment in object.get.comments.all %}
+            <article class="media content-section">
+              <img class="rounded-circle article-img" src="{{ comment.author.profile.image.url }}">
+              <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{ comment.author }}</a>
+                    <small class="text-muted">{{ comment.date_posted|date:"F d Y" }}</small>
+                    {% if comment.author == user %}
+                    <div class="float-right">
+                        <a class="badge badge-secondary mt-1 mb-1" href="{% url 'comment-update' comment.id %}">Update</a>
+                        <a class="badge badge-danger mt-1 mb-1" href="{% url 'comment-delete' comment.id %}">Delete</a>
+                    </div>
+                    {% endif %}
+                </div>
+                <p class="article-content">{{ comment.content }}</p>
+              </div>
+            </article>
+        {% empty %}
+            <h4 class="text-center text-muted p-2">"{{ object.get }}" has no comments yet</h4>
+        {% endfor %}
+
+    <section id="comment">
+    {% if user.is_authenticated %}
+    <form method="POST" action="{% url 'post-detail' object.get.id %}">
+      {% csrf_token %}
+      <div class="d-flex pb-4">
+          <div class="w-100">
+            {{ form|crispy }}
+          </div>
+          <div class="form-group">
+            <button class="btn btn-outline-info ml-2" type="submit">Add Comment</button>
+          </div>
       </div>
-    </article>
-<a class="btn btn-outline-info mb-4" href="{% url 'post-comments' post.id %}">View Comments: {{object.comments.count}}</a>
-<a class="btn btn-outline-info mb-4" href="{% url 'comment-create' post.id %}">Make a Comment</a>
+    </form>
+    {% endif %}
+    </section>
 {% endblock content %}
