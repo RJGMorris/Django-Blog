@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from users import views as user_views
+from blog.views import like_post, un_like_post
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,6 +42,8 @@ urlpatterns = [
     path('blog/', include('blog.urls')),
     path('follow/<int:pk>/', user_views.follow, name='follow'),
     path('un_follow/<int:pk>/', user_views.un_follow, name='un-follow'),
+    path('like/<int:pk>/', like_post, name='like'),
+    path('un_like/<int:pk>/', un_like_post, name='un-like'),
 ]
 
 if settings.DEBUG:
