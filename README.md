@@ -6,6 +6,14 @@ Each user has their own profile page and picture, and I have paginated the blogs
 completing this project I learnt a lot about web views, models, templates, databases and urls.
 
 # Screen Shots
-<img src="./screen_shots/Home.png" width="49%"/>   <img src="./screen_shots/Page.png" width="49%"/>
+- Home Page
+<img src="./screen_shots/Home.png"/>
 
-<img src="./screen_shots/Detail.png" width="49%"/>   <img src="./screen_shots/Profile.png" width="49%"/>
+- A Users Wall
+<img src="./screen_shots/Page.png"/>
+
+- A Post Detail Page
+<img src="./screen_shots/Detail.png"/>   
+
+- A Profile Update Page
+<img src="./screen_shots/Profile.png"/>
