@@ -3,20 +3,20 @@
     <div style='border-bottom:1px solid #ccc;' class="article-metadata">
         <h1 class="mb-1">{{ view.kwargs.username }}'s Page</h1>
     </div>
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between pt-1">
         <h4><a href="{% url 'user-posts' view.kwargs.username %}" class="btn article-title">Posts: {{profile.get.posts.count }}</a></h4>
-        <h4><a href="{% url 'user-followers' view.kwargs.username %}" class="btn">Followers: {{profile.get.profile.followers.count }}</a></h4>
         <h4><a href="{% url 'user-following' view.kwargs.username %}" class="btn article-title">Following: {{profile.get.profile.following.count }}</a></h4>
+        <h4><a href="{% url 'user-followers' view.kwargs.username %}" class="btn">Followers: {{profile.get.profile.followers.count }}</a></h4>
     </div>
-        {% for profile in profile.get.profile.followers.all %}
+        {% for profile_follower in profile.get.profile.followers.all %}
             <article class="media content-section">
-              <img class="rounded-circle article-img" src="{{ profile.profile.image.url }}">
+              <img class="rounded-circle article-img" src="{{ profile_follower.profile.image.url }}">
               <div style='border-bottom:1px solid #ccc;' class="media-body mt-2 d-flex justify-content-between">
-                  <h2><a class="article-title" href="{% url 'user-posts' profile.username %}">{{ profile }}</a></h2>
-                  {% if user in profile.profile.followers.all %}
+                  <h2><a class="article-title" href="{% url 'user-posts' profile_follower.username %}">{{ profile_follower }}</a></h2>
+                  {% if user in profile_follower.profile.followers.all %}
                     <a class="btn disabled">Following</a>
-                  {% elif not profile == user %}
-                    <a class="btn">Follow</a>
+                  {% elif not profile_follower == user %}
+                    <a class="btn" href="{% url 'follow' profile_follower.id %}">Follow</a>
                   {% endif %}
               </div>
             </article>

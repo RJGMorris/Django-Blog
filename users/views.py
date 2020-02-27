@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.urls import resolve
+from django.http import HttpResponseRedirect
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from .models import Profile
 
@@ -45,10 +45,12 @@ def follow(request, pk):
     user_profile = Profile.objects.get(user=request.user)
     to_follow_profile = Profile.objects.get(pk=pk)
 
-    user_profile.following.add(to_follow_profile.user)
-    to_follow_profile.followers.add(user_profile.user)
+    if user_profile != to_follow_profile:
+        user_profile.following.add(to_follow_profile.user)
+        to_follow_profile.followers.add(user_profile.user)
 
     return redirect('/blog/user/{}/'.format(to_follow_profile.user.username))
+    # return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/blog/'))
 
 
 @login_required

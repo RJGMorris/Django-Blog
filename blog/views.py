@@ -1,12 +1,14 @@
-from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse
 from .models import Post, Comment
-from users.models import Profile
+from .forms import CommentForm
 
 
 def home(request):
@@ -35,15 +37,11 @@ class UserPostListView(ListView):
         return User.objects.filter(username=self.kwargs.get('username'))
 
 
-class PostDetailView(DetailView):
-    model = Post
-
-
 class PostCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Post
     fields = ['title', 'content']
     success_message = "Post Created"
-    
+
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
@@ -81,21 +79,20 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return super(PostDeleteView, self).delete(request, *args, **kwargs)
 
 
-class PostCommentListView(DetailView):
-    model = Post
-    template_name = 'blog/post_comments.html'
+def post_detail_view(request, pk):
+    post = Post.objects.filter(pk=pk)
+    form = CommentForm()
 
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            form.instance.author = request.user
+            form.instance.post = post.get()
+            form.save()
+        return redirect('/blog/post/{}/#comment'.format(pk))
 
-class CommentCreateView(LoginRequiredMixin, CreateView):
-    model = Comment
-    fields = ['content', ]
-    template_name = 'blog/comment_form.html'
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        post = get_object_or_404(Post, id=self.kwargs.get('pk'))
-        form.instance.post = post
-        return super().form_valid(form)
+    context = {'object': post, 'form': form}
+    return render(request, 'blog/post_detail.html', context)
 
 
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
@@ -113,6 +110,10 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageM
             return True
         return False
 
+    def get_success_url(self):
+        comment = get_object_or_404(Comment, id=self.kwargs.get('pk'))
+        return reverse('post-detail', kwargs={'pk': comment.post.pk})
+
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Comment
@@ -120,7 +121,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_success_url(self):
         comment = get_object_or_404(Comment, id=self.kwargs.get('pk'))
-        return reverse('post-comments', kwargs={'pk': comment.post.pk})
+        return reverse('post-detail', kwargs={'pk': comment.post.pk})
 
     def test_func(self):
         comment = self.get_object()
@@ -161,3 +162,34 @@ class UserFollowersListView(ListView):
 
     def get_queryset(self):
         return User.objects.filter(username=self.kwargs.get('username'))
+
+
+class PostLikedByListView(ListView):
+    model = Post
+    template_name = 'blog/post_likes.html'
+    context_object_name = 'post'
+
+    def get_queryset(self):
+        return Post.objects.filter(id=self.kwargs.get('pk'))
+
+
+@login_required
+def like_post(request, pk):
+    user = request.user
+    post_to_like = Post.objects.get(pk=pk)
+
+    user.profile.liked_posts.add(post_to_like)
+    post_to_like.liked_by.add(user)
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/blog/'))
+
+
+@login_required
+def un_like_post(request, pk):
+    user = request.user
+    post_to_un_like = Post.objects.get(pk=pk)
+
+    user.profile.liked_posts.remove(post_to_un_like)
+    post_to_un_like.liked_by.remove(user)
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/blog/'))

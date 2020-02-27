@@ -1,0 +1,19 @@
+{% extends "blog/base.html" %}
+{% block content %}
+<h5 style='border-bottom:1px solid #ccc;' class="pt-1 pb-1 text-center">Likes: {{post.get.liked_by.count}}</h5>
+{% for profile_liked_by in post.get.liked_by.all %}
+    <article class="media content-section">
+      <img class="rounded-circle article-img" src="{{ profile_liked_by.profile.image.url }}">
+      <div style='border-bottom:1px solid #ccc;' class="media-body mt-2 d-flex justify-content-between">
+          <h2><a class="article-title" href="{% url 'user-posts' profile_liked_by.username %}">{{ profile_liked_by }}</a></h2>
+          {% if user in profile_liked_by.profile.followers.all %}
+            <a class="btn disabled">Following</a>
+          {% elif not profile_liked_by == user %}
+            <a class="btn" href="{% url 'follow' profile_liked_by.id %}">Follow</a>
+          {% endif %}
+      </div>
+    </article>
+{% empty %}
+    <h4 class="text-center text-muted p-2">"{{ post.get.title }}" has no likes yet</h4>
+{% endfor %}
+{% endblock content %}
